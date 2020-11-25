@@ -13,7 +13,7 @@ RSpec.describe StateMachine do
     end
 
     event :run do
-      transitions from: [:standing, :walking], to: :running
+      transitions from: [:standing, :walking], to: :running, when: -> { 1 == 2 }
     end
 
     event :hold do
@@ -80,6 +80,10 @@ RSpec.describe StateMachine do
 
     it 'raises error when transition is invalid' do
       expect { subject.hold! }.to raise_error('invalid transition')
+    end
+
+    it 'raises error if guard clause is violated' do
+      expect { subject.run! }.to raise_error('transition guard clause violated')
     end
   end
 end

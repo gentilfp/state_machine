@@ -34,6 +34,9 @@ module StateMachine
     current_transition = @events[event][current_state]
     raise 'invalid transition' if current_transition.nil?
 
+    guard_clause = transition.guard.call
+    raise 'transition guard clause violated' unless guard_clause
+
     @current_state = transition.to
   end
 
