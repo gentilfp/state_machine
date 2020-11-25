@@ -20,12 +20,24 @@ RSpec.describe StateMachine do
       transitions from: [:walking, :running], to: :standing, when: :method_guard
     end
 
+    on_enter :walking do
+      puts "entering walking state"
+    end
+
+    on_leave :running do
+      puts "leaving running state"
+    end
+
+    on_transition :hold do
+      puts "running hold transition"
+    end
+
     def method_guard
       true
     end
   end
 
-  context 'states' do
+  context 'defining states' do
     subject { StateMachineTestClass.new(initial_state) }
     let(:initial_state) { nil }
 
@@ -94,7 +106,7 @@ RSpec.describe StateMachine do
     end
   end
 
-  context 'register events and transitions' do
+  context 'registering events and transitions' do
     subject { StateMachineTestClass.new }
 
     context 'registering events and state transitions' do
@@ -148,6 +160,22 @@ RSpec.describe StateMachine do
 
     it 'returns false if transition is not allowed' do
       expect(subject.can_walk?).to be_falsey
+    end
+  end
+
+  context 'defining callbacks' do
+    subject { StateMachineTestClass.new }
+
+    context 'when entering a state' do
+      it { expect(subject.callbacks[:enter_state][:walking]).to be_a Callback }
+    end
+
+    context 'when leaving a state' do
+      it { expect(subject.callbacks[:leave_state][:running]).to be_a Callback }
+    end
+
+    context 'when running a transition' do
+      it { expect(subject.callbacks[:trantition][:hold]).to be_a Callback }
     end
   end
 end

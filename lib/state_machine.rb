@@ -1,5 +1,6 @@
 require "state_machine/version"
 require "state_machine/transition"
+require "state_machine/callback"
 
 module StateMachine
   class Error < StandardError; end
@@ -12,6 +13,7 @@ module StateMachine
     set_initial_state(initial_state)
     register_events
     define_transition_methods
+    register_callbacks
   end
 
   def set_initial_state(initial_state)
@@ -22,8 +24,16 @@ module StateMachine
     @events = self.class.instance_variable_get(:@events)
   end
 
+  def register_callbacks
+    @callbacks = self.class.instance_variable_get(:@callbacks)
+  end
+
   def events
     @events
+  end
+
+  def callbacks
+    @callbacks
   end
 
   def current_state
@@ -97,6 +107,30 @@ module StateMachine
         transition = Transition.new(from_state, to, guard)
         @events[@current_event][from_state] = transition
       end
+    end
+
+    def on_enter(*args, &block)
+      state_name = args[0]
+
+      @callbacks ||= {}
+      @callbacks[:enter_state] ||= {}
+      @callbacks[:enter_state][state_name] = Callback.new(block)
+    end
+
+    def on_leave(*args, &block)
+      state_name = args[0]
+
+      @callbacks ||= {}
+      @callbacks[:leave_state] ||= {}
+      @callbacks[:leave_state][state_name] = Callback.new(block)
+    end
+
+    def on_transition(*args, &block)
+      transition_name = args[0]
+
+      @callbacks ||= {}
+      @callbacks[:trantition] ||= {}
+      @callbacks[:trantition][transition_name] = Callback.new(block)
     end
   end
 end
