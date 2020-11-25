@@ -60,7 +60,7 @@ module StateMachine
       name, options = args[0], args[1] || {}
 
       if options[:initial]
-        raise 'only one initial state is allowed' if @initial_state
+        raise 'OnlyOneInitialStateAllowed' if @initial_state
 
         @initial_state = name
       end

@@ -50,6 +50,18 @@ RSpec.describe StateMachine do
         it { expect(subject.running?).to be_falsey }
       end
     end
+
+    context 'with more than one initial state allowed' do
+      subject do
+        class StateMachineTestClass
+          state :extra_initial, initial: true
+        end
+      end
+
+      it 'raises error' do
+        expect{ subject }.to raise_error('OnlyOneInitialStateAllowed')
+      end
+    end
   end
 
   context 'register events and transitions' do
