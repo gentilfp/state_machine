@@ -175,7 +175,33 @@ RSpec.describe StateMachine do
     end
 
     context 'when running a transition' do
-      it { expect(subject.callbacks[:trantition][:hold]).to be_a Callback }
+      it { expect(subject.callbacks[:transition][:hold]).to be_a Callback }
+    end
+  end
+
+  context 'running callbacks' do
+    context 'when leaving a state' do
+      subject { StateMachineTestClass.new(:running) }
+
+      it 'runs callback before transition' do
+        expect { subject.hold! }.to output(/leaving running state/).to_stdout
+      end
+    end
+
+    context 'when running a transition' do
+      subject { StateMachineTestClass.new(:walking) }
+
+      it 'runs callback during transition' do
+        expect { subject.hold! }.to output(/running hold transition/).to_stdout
+      end
+    end
+
+    context 'when entering a state' do
+      subject { StateMachineTestClass.new }
+
+      it 'runs callback after transition' do
+        expect { subject.walk! }.to output(/entering walking state/).to_stdout
+      end
     end
   end
 end

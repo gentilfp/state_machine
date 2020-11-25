@@ -44,7 +44,12 @@ module StateMachine
     raise 'InvalidTransition' if @events[event][current_state].nil?
     raise 'TransitionGuardClauseViolated' unless transition.valid_guard?(self)
 
+    callbacks[:leave_state][@current_state]&.call
+    callbacks[:transition][event]&.call
+
     @current_state = transition.to
+
+    callbacks[:enter_state][@current_state]&.call
   end
 
   def can_transit?(event, transition)
@@ -129,8 +134,8 @@ module StateMachine
       transition_name = args[0]
 
       @callbacks ||= {}
-      @callbacks[:trantition] ||= {}
-      @callbacks[:trantition][transition_name] = Callback.new(block)
+      @callbacks[:transition] ||= {}
+      @callbacks[:transition][transition_name] = Callback.new(block)
     end
   end
 end

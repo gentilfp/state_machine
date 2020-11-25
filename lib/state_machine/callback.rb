@@ -6,6 +6,6 @@ class Callback
   end
 
   def call
-    code_block.call
+    code_block&.call
   end
 end

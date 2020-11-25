@@ -12,7 +12,15 @@ RSpec.describe Callback do
 
   describe '.call' do
     it 'runs code' do
-      expect { subject.call }.to output("hello from callback\n").to_stdout
+      expect { subject.call }.to output(/hello from callback/).to_stdout
+    end
+
+    context 'when code block is empty' do
+      let(:code_block) { nil }
+
+      it 'does nothing' do
+        expect(subject.call).to be_nil
+      end
     end
   end
 end
