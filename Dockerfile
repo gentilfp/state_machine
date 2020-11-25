@@ -17,7 +17,7 @@ COPY lib/state_machine/version.rb ./lib/state_machine/version.rb
 ARG BUILD_PACKAGES="build-base g++ gcc make"
 RUN gem install bundler && \
     apk update && \
-    apk add --update --no-cache ${BUILD_PACKAGES} git &&\
+    apk add --update --no-cache ${BUILD_PACKAGES} git graphviz ttf-freefont &&\
     bundle install && \
     bundle config --global --jobs `expr $(grep processor /proc/cpuinfo | wc -l) - 1` && \
     apk del ${BUILD_PACKAGES} && \

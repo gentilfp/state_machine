@@ -29,6 +29,9 @@ case $1 in
   rubocop)
     run rubocop ${@:2}
     ;;
+  diagram)
+    run bin/sample_diagram
+    ;;
   *)
     echo -e 'This is the state_machine script you can use to run console, bash, tests and so on.'
     echo
@@ -42,6 +45,7 @@ case $1 in
     echo " ${yellow}console:${white} start ruby console"
     echo " ${yellow}rubocop:${white} runs statis code analyzer"
     echo " ${yellow}sh:${white} bring up a sh session"
+    echo " ${yellow}diagram:${white} generates a sample diagram for a state machine"
     echo
     echo "${green}Hope you have fun!"
     echo

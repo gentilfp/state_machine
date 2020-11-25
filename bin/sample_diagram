@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'bundler/setup'
+require 'state_machine'
+require 'ruby-graphviz'
+
+class StateMachineSampleDiagramClass
+  include StateMachine
+
+  state :standing, initial: true
+  state :walking
+  state :running
+
+  event :walk do
+    transitions from: :standing, to: :walking
+  end
+
+  event :run do
+    transitions from: %i[standing walking], to: :running
+  end
+
+  event :hold do
+    transitions from: %i[walking running], to: :standing
+  end
+end
+
+obj = StateMachineSampleDiagramClass.new
+g = GraphViz.new(:G, type: :digraph)
+diagram = {}
+
+# add nodes
+obj.states.each do |state|
+  diagram[state] = g.add_nodes(state.to_s)
+end
+
+# add edges
+obj.events.each_value do |events|
+  events.each_value do |transition|
+    g.add_edges(diagram[transition.from], diagram[transition.to])
+  end
+end
+
+g.output(png: "tmp/#{Time.now.to_i}_sample_diagram.png")
