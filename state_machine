@@ -1,0 +1,49 @@
+#!/bin/bash
+
+yellow=$(tput setaf 3)
+blue=$(tput setaf 6)
+green=$(tput setaf 2)
+red=$(tput setaf 5)
+white=$(tput sgr0)
+
+run(){
+  docker-compose run --rm $args state_machine $@
+}
+
+case $1 in
+  setup)
+    docker-compose build
+    ;;
+  sh)
+    run sh
+    ;;
+  console)
+    run bin/console
+    ;;
+  tests)
+    run bundle exec rspec
+    ;;
+  run)
+    run ${@:2}
+    ;;
+  rubocop)
+    run rubocop ${@:2}
+    ;;
+  *)
+    echo -e 'This is the state_machine script you can use to run console, bash, tests and so on.'
+    echo
+    echo 'Usage: state_machine <option> <arguments>'
+    echo
+    echo 'Available options:'
+    echo " ${yellow}setup:${white} build docker image"
+    echo " ${yellow}start:${white} run the application"
+    echo " ${yellow}run:${white} run given command inside the container"
+    echo " ${yellow}tests:${white} run tests"
+    echo " ${yellow}console:${white} start ruby console"
+    echo " ${yellow}rubocop:${white} runs statis code analyzer"
+    echo " ${yellow}sh:${white} bring up a sh session"
+    echo
+    echo "${green}Hope you have fun!"
+    echo
+  ;;
+esac

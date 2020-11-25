@@ -1,0 +1,8 @@
+version: "3.4"
+services:
+  state_machine:
+    image: state_machine
+    build:
+      context: .
+    volumes:
+      - ".:/app"
