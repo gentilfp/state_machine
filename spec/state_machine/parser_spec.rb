@@ -1,10 +1,10 @@
 require 'spec_helper'
 
-RSpec.describe Builder do
+RSpec.describe StateMachine::Parser do
   context 'parsing states, events and transitions' do
     subject do
       class StateTestClass
-        extend Builder
+        extend StateMachine::Parser
 
         state :pending, initial: true
         state :done
@@ -23,7 +23,7 @@ RSpec.describe Builder do
   context 'events and transitions' do
     subject do
       class EventTransitionTestClass
-        extend Builder
+        extend StateMachine::Parser
 
         state :pending, initial: true
         state :done
@@ -46,7 +46,7 @@ RSpec.describe Builder do
   context 'state callbacks' do
     subject do
       class StateCallbackTestClass
-        extend Builder
+        extend StateMachine::Parser
 
         state :pending, initial: true
         state :done
@@ -67,7 +67,7 @@ RSpec.describe Builder do
   context 'transition callbacks' do
     subject do
       class TransitionCallbackTestClass
-        extend Builder
+        extend StateMachine::Parser
 
         state :pending, initial: true
         state :done

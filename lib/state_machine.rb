@@ -1,12 +1,14 @@
 require "state_machine/version"
 require "state_machine/transition"
 require "state_machine/callback"
-require "state_machine/builder"
+require "state_machine/parser"
 
 module StateMachine
+  class InvalidTransition < StandardError; end
+  class TransitionGuardClauseViolated < StandardError; end
 
   def self.included(base)
-    base.extend Builder
+    base.extend StateMachine::Parser
   end
 
   def initialize(initial_state = nil)
@@ -14,13 +16,9 @@ module StateMachine
     define_methods
   end
 
-  def states
-    @states ||= events.keys.flat_map{|event| events[event].keys}.uniq
-  end
-
   def transit(event, transition)
-    raise 'InvalidTransition' if @events[event][current_state].nil?
-    raise 'TransitionGuardClauseViolated' unless transition.valid_guard?(self)
+    raise InvalidTransition if events[event][current_state].nil?
+    raise TransitionGuardClauseViolated unless transition.valid_guard?(self)
 
     callbacks[:leave_state][@current_state]&.call
     callbacks[:transition][event]&.call
@@ -34,13 +32,12 @@ module StateMachine
     !events[event][current_state].nil? && transition.valid_guard?(self)
   end
 
-  def define_methods
-    define_state_methods
-    define_event_methods
-  end
-
   def current_state
     @current_state ||= @initial_state
+  end
+
+  def states
+    @states ||= events.keys.flat_map{|event| events[event].keys}.uniq
   end
 
   def events
@@ -52,6 +49,11 @@ module StateMachine
   end
 
   private
+
+  def define_methods
+    define_state_methods
+    define_event_methods
+  end
 
   def set_initial_state(initial_state)
     @initial_state ||= initial_state || self.class.instance_variable_get(:@initial_state)

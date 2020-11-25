@@ -71,7 +71,7 @@ RSpec.describe StateMachine do
       end
 
       it 'raises error' do
-        expect{ subject }.to raise_error(Builder::OnlyOneInitialStateAllowed)
+        expect{ subject }.to raise_error(StateMachine::Parser::OnlyOneInitialStateAllowed)
       end
     end
 
@@ -86,7 +86,7 @@ RSpec.describe StateMachine do
         end
 
         it 'raises error' do
-          expect{ subject }.to raise_error(Builder::InvalidStateInTransition)
+          expect{ subject }.to raise_error(StateMachine::Parser::InvalidStateInTransition)
         end
       end
 
@@ -100,7 +100,7 @@ RSpec.describe StateMachine do
         end
 
         it 'raises error' do
-          expect{ subject }.to raise_error(Builder::InvalidStateInTransition)
+          expect{ subject }.to raise_error(StateMachine::Parser::InvalidStateInTransition)
         end
       end
     end
@@ -143,11 +143,11 @@ RSpec.describe StateMachine do
     end
 
     it 'raises error when transition is invalid' do
-      expect { subject.hold! }.to raise_error('InvalidTransition')
+      expect { subject.hold! }.to raise_error(StateMachine::InvalidTransition)
     end
 
     it 'raises error if guard clause is violated' do
-      expect { subject.run! }.to raise_error('TransitionGuardClauseViolated')
+      expect { subject.run! }.to raise_error(StateMachine::TransitionGuardClauseViolated)
     end
   end
 
