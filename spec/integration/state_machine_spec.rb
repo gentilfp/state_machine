@@ -71,7 +71,7 @@ RSpec.describe StateMachine do
       end
 
       it 'raises error' do
-        expect{ subject }.to raise_error('OnlyOneInitialStateAllowed')
+        expect{ subject }.to raise_error(Builder::OnlyOneInitialStateAllowed)
       end
     end
 
@@ -86,7 +86,7 @@ RSpec.describe StateMachine do
         end
 
         it 'raises error' do
-          expect{ subject }.to raise_error('InvalidStateInTransition')
+          expect{ subject }.to raise_error(Builder::InvalidStateInTransition)
         end
       end
 
@@ -100,7 +100,7 @@ RSpec.describe StateMachine do
         end
 
         it 'raises error' do
-          expect{ subject }.to raise_error('InvalidStateInTransition')
+          expect{ subject }.to raise_error(Builder::InvalidStateInTransition)
         end
       end
     end

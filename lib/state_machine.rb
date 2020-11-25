@@ -1,43 +1,21 @@
 require "state_machine/version"
 require "state_machine/transition"
 require "state_machine/callback"
+require "state_machine/builder"
 
 module StateMachine
-  class Error < StandardError; end
 
   def self.included(base)
-    base.extend StateMachine::ClassMethods
+    base.extend Builder
   end
 
   def initialize(initial_state = nil)
     set_initial_state(initial_state)
-    register_events
-    define_transition_methods
-    register_callbacks
+    define_methods
   end
 
-  def set_initial_state(initial_state)
-    @current_state = initial_state || self.class.instance_variable_get(:@initial_state)
-  end
-
-  def register_events
-    @events = self.class.instance_variable_get(:@events)
-  end
-
-  def register_callbacks
-    @callbacks = self.class.instance_variable_get(:@callbacks)
-  end
-
-  def events
-    @events
-  end
-
-  def callbacks
-    @callbacks
-  end
-
-  def current_state
-    @current_state
+  def states
+    @states ||= events.keys.flat_map{|event| events[event].keys}.uniq
   end
 
   def transit(event, transition)
@@ -53,10 +31,41 @@ module StateMachine
   end
 
   def can_transit?(event, transition)
-    !@events[event][current_state].nil? && transition.valid_guard?(self)
+    !events[event][current_state].nil? && transition.valid_guard?(self)
   end
 
-  def define_transition_methods
+  def define_methods
+    define_state_methods
+    define_event_methods
+  end
+
+  def current_state
+    @current_state ||= @initial_state
+  end
+
+  def events
+    @events ||= self.class.instance_variable_get(:@events)
+  end
+
+  def callbacks
+    @callbacks ||= self.class.instance_variable_get(:@callbacks)
+  end
+
+  private
+
+  def set_initial_state(initial_state)
+    @initial_state ||= initial_state || self.class.instance_variable_get(:@initial_state)
+  end
+
+  def define_state_methods
+    states.each do |state|
+      define_singleton_method("#{state}?") do
+        current_state == state
+      end
+    end
+  end
+
+  def define_event_methods
     events.each do |event, transitions|
       transitions.keys.each do |from|
         define_singleton_method("#{event}!") do
@@ -67,75 +76,6 @@ module StateMachine
           can_transit?(event, transitions[from])
         end
       end
-    end
-  end
-
-  module ClassMethods
-    def state(*args)
-      name, options = args[0], args[1] || {}
-
-      if options[:initial]
-        raise 'OnlyOneInitialStateAllowed' if @initial_state
-
-        @initial_state = name
-      end
-
-      @states ||= []
-      @states << name
-
-      define_method("#{name}?") do
-        current_state == name
-      end
-    end
-
-    def event(*args, &block)
-      name = args[0]
-
-      @current_event = name
-      yield if block_given?
-    end
-
-    def transitions(*args)
-      options = args[0]
-      from, to, guard = options[:from], options[:to], options[:when]
-
-      event_states = [from, to].flatten
-      states_intersection = (@states & event_states)
-      unless  event_states.all? {|state| states_intersection.include?(state)}
-        raise 'InvalidStateInTransition'
-      end
-
-      @events ||= {}
-      @events[@current_event] ||= {}
-
-      [from].flatten.each do |from_state|
-        transition = Transition.new(from_state, to, guard)
-        @events[@current_event][from_state] = transition
-      end
-    end
-
-    def on_enter(*args, &block)
-      state_name = args[0]
-
-      @callbacks ||= {}
-      @callbacks[:enter_state] ||= {}
-      @callbacks[:enter_state][state_name] = Callback.new(block)
-    end
-
-    def on_leave(*args, &block)
-      state_name = args[0]
-
-      @callbacks ||= {}
-      @callbacks[:leave_state] ||= {}
-      @callbacks[:leave_state][state_name] = Callback.new(block)
-    end
-
-    def on_transition(*args, &block)
-      transition_name = args[0]
-
-      @callbacks ||= {}
-      @callbacks[:transition] ||= {}
-      @callbacks[:transition][transition_name] = Callback.new(block)
     end
   end
 end
