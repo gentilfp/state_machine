@@ -1,4 +1,5 @@
 require "state_machine/version"
+require "state_machine/transition"
 
 module StateMachine
   class Error < StandardError; end
@@ -29,19 +30,18 @@ module StateMachine
     @current_state
   end
 
-  def transit(event, from, to)
-    if @events[event][current_state] == to
-      @current_state = to
-    else
-      raise 'invalid transition'
-    end
+  def transit(event, transition)
+    current_transition = @events[event][current_state]
+    raise 'invalid transition' if current_transition.nil?
+
+    @current_state = transition.to
   end
 
   def define_transition_methods
     events.each do |event, transitions|
       transitions.keys.each do |from|
         define_singleton_method("#{event}!") do
-          transit(event, from, transitions[from])
+          transit(event, transitions[from])
         end
       end
     end
@@ -67,13 +67,14 @@ module StateMachine
 
     def transitions(*args)
       options = args[0]
-      from, to = options[:from], options[:to]
+      from, to, guard = options[:from], options[:to], options[:when]
 
       @events ||= {}
       @events[@current_event] ||= {}
 
       [from].flatten.each do |from_state|
-        @events[@current_event][from_state] = to
+        transition = Transition.new(from_state, to, guard)
+        @events[@current_event][from_state] = transition
       end
     end
   end

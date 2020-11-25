@@ -9,7 +9,7 @@ RSpec.describe StateMachine do
     state :running
 
     event :walk do
-      transitions from: :standing, to: :walking
+      transitions from: :standing, to: :walking, when: -> { 1 == 1 }
     end
 
     event :run do
@@ -50,19 +50,22 @@ RSpec.describe StateMachine do
 
   context 'register events and transitions' do
     subject { StateMachineTestClass.new }
-    let(:events) do
-      {
-        walk: { standing: :walking },
-        run:  { standing: :running,
-                walking: :running },
-        hold: { walking: :standing,
-                running: :standing}
-      }
-    end
 
     context 'registering events and state transitions' do
       it 'registers hash with events' do
-        expect(subject.events).to eq events
+        expect(subject.events).to include(:walk, :run, :hold)
+      end
+
+      it 'registers events with transions' do
+        expect(subject.events[:walk]).to include :standing
+        expect(subject.events[:run]).to include :standing
+        expect(subject.events[:run]).to include :walking
+        expect(subject.events[:hold]).to include :walking
+        expect(subject.events[:hold]).to include :running
+      end
+
+      it 'registers guard clause' do
+        expect(subject.events[:walk][:standing].guard).to be_a Proc
       end
     end
   end
