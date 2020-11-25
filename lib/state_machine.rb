@@ -31,10 +31,14 @@ module StateMachine
   end
 
   def transit(event, transition)
-    raise 'invalid transition' if @events[event][current_state].nil?
-    raise 'transition guard clause violated' unless transition.valid_guard?(self)
+    raise 'InvalidTransition' if @events[event][current_state].nil?
+    raise 'TransitionGuardClauseViolated' unless transition.valid_guard?(self)
 
     @current_state = transition.to
+  end
+
+  def can_transit?(event, transition)
+    !@events[event][current_state].nil? && transition.valid_guard?(self)
   end
 
   def define_transition_methods
@@ -42,6 +46,10 @@ module StateMachine
       transitions.keys.each do |from|
         define_singleton_method("#{event}!") do
           transit(event, transitions[from])
+        end
+
+        define_singleton_method("can_#{event}?") do
+          can_transit?(event, transitions[from])
         end
       end
     end
@@ -51,7 +59,11 @@ module StateMachine
     def state(*args)
       name, options = args[0], args[1] || {}
 
-      @initial_state = name if options[:initial]
+      if options[:initial]
+        raise 'only one initial state is allowed' if @initial_state
+
+        @initial_state = name
+      end
 
       define_method("#{name}?") do
         current_state == name

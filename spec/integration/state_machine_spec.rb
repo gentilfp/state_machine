@@ -89,11 +89,23 @@ RSpec.describe StateMachine do
     end
 
     it 'raises error when transition is invalid' do
-      expect { subject.hold! }.to raise_error('invalid transition')
+      expect { subject.hold! }.to raise_error('InvalidTransition')
     end
 
     it 'raises error if guard clause is violated' do
-      expect { subject.run! }.to raise_error('transition guard clause violated')
+      expect { subject.run! }.to raise_error('TransitionGuardClauseViolated')
+    end
+  end
+
+  context 'can transit method' do
+    subject { StateMachineTestClass.new(:walking) }
+
+    it 'returns true if transition is allowed' do
+      expect(subject.can_hold?).to be_truthy
+    end
+
+    it 'returns false if transition is not allowed' do
+      expect(subject.can_walk?).to be_falsey
     end
   end
 end
