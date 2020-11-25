@@ -9,14 +9,15 @@ module StateMachine
 
   def initialize(initial_state = nil)
     set_initial_state(initial_state)
-    set_events
+    register_events
+    define_transition_methods
   end
 
   def set_initial_state(initial_state)
-    @initial_state = initial_state || self.class.instance_variable_get(:@initial_state)
+    @current_state = initial_state || self.class.instance_variable_get(:@initial_state)
   end
 
-  def set_events
+  def register_events
     @events = self.class.instance_variable_get(:@events)
   end
 
@@ -25,7 +26,25 @@ module StateMachine
   end
 
   def current_state
-    @initial_state
+    @current_state
+  end
+
+  def transit(event, from, to)
+    if @events[event][current_state] == to
+      @current_state = to
+    else
+      raise 'invalid transition'
+    end
+  end
+
+  def define_transition_methods
+    events.each do |event, transitions|
+      transitions.keys.each do |from|
+        define_singleton_method("#{event}!") do
+          transit(event, from, transitions[from])
+        end
+      end
+    end
   end
 
   module ClassMethods

@@ -66,4 +66,17 @@ RSpec.describe StateMachine do
       end
     end
   end
+
+  context 'simple transition' do
+    subject { StateMachineTestClass.new(:standing) }
+
+    it 'transits from one state to another' do
+      subject.walk!
+      expect(subject.current_state).to eq :walking
+    end
+
+    it 'raises error when transition is invalid' do
+      expect { subject.hold! }.to raise_error('invalid transition')
+    end
+  end
 end
