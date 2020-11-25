@@ -7,6 +7,18 @@ RSpec.describe StateMachine do
     state :standing, initial: true
     state :walking
     state :running
+
+    event :walk do
+      transitions from: :standing, to: :walking
+    end
+
+    event :run do
+      transitions from: [:standing, :walking], to: :running
+    end
+
+    event :hold do
+      transitions from: [:walking, :running], to: :standing
+    end
   end
 
   context 'states' do
@@ -32,6 +44,25 @@ RSpec.describe StateMachine do
         it { expect(subject.standing?).to be_falsey }
         it { expect(subject.walking?).to be_truthy }
         it { expect(subject.running?).to be_falsey }
+      end
+    end
+  end
+
+  context 'register events and transitions' do
+    subject { StateMachineTestClass.new }
+    let(:events) do
+      {
+        walk: { standing: :walking },
+        run:  { standing: :running,
+                walking: :running },
+        hold: { walking: :standing,
+                running: :standing}
+      }
+    end
+
+    context 'registering events and state transitions' do
+      it 'registers hash with events' do
+        expect(subject.events).to eq events
       end
     end
   end
