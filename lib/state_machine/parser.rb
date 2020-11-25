@@ -1,21 +1,22 @@
+# frozen_string_literal: true
+
 module StateMachine
   module Parser
     class OnlyOneInitialStateAllowed < StandardError; end
     class InvalidStateInTransition < StandardError; end
 
-    attr_reader :states
-
     def state(*args)
-      name, options = args[0], args[1] || {}
+      name = args[0]
+      options = args[1] || {}
 
-      set_initial_state(name) if options[:initial]
+      initial_state(name) if options[:initial]
 
       states << name
 
       self
     end
 
-    def event(*args, &block)
+    def event(*args)
       @current_event = args[0]
 
       yield if block_given?
@@ -25,7 +26,9 @@ module StateMachine
 
     def transitions(*args)
       options = args[0]
-      from, to, guard = options[:from], options[:to], options[:when]
+      from = options[:from]
+      to = options[:to]
+      guard = options[:when]
 
       raise InvalidStateInTransition unless validate_states_in_transation(from, to)
 
@@ -62,7 +65,7 @@ module StateMachine
 
     private
 
-    def set_initial_state(name)
+    def initial_state(name)
       @initial_state ||= nil
 
       raise OnlyOneInitialStateAllowed if @initial_state
@@ -89,7 +92,7 @@ module StateMachine
       event_states = [from, to].flatten
       states_intersection = (states & event_states)
 
-      return false unless event_states.all? {|s| states_intersection.include?(s)}
+      return false unless event_states.all? { |s| states_intersection.include?(s) }
 
       true
     end

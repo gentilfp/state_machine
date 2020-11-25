@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe StateMachine do
@@ -9,27 +11,27 @@ RSpec.describe StateMachine do
     state :running
 
     event :walk do
-      transitions from: :standing, to: :walking, when: -> { 1 == 1 }
+      transitions from: :standing, to: :walking, when: -> { 1 != 2 }
     end
 
     event :run do
-      transitions from: [:standing, :walking], to: :running, when: -> { 1 == 2 }
+      transitions from: %i[standing walking], to: :running, when: -> { 1 == 2 }
     end
 
     event :hold do
-      transitions from: [:walking, :running], to: :standing, when: :method_guard
+      transitions from: %i[walking running], to: :standing, when: :method_guard
     end
 
     on_enter :walking do
-      puts "entering walking state"
+      puts 'entering walking state'
     end
 
     on_leave :running do
-      puts "leaving running state"
+      puts 'leaving running state'
     end
 
     on_transition :hold do
-      puts "running hold transition"
+      puts 'running hold transition'
     end
 
     def method_guard
@@ -71,7 +73,7 @@ RSpec.describe StateMachine do
       end
 
       it 'raises error' do
-        expect{ subject }.to raise_error(StateMachine::Parser::OnlyOneInitialStateAllowed)
+        expect { subject }.to raise_error(StateMachine::Parser::OnlyOneInitialStateAllowed)
       end
     end
 
@@ -86,7 +88,7 @@ RSpec.describe StateMachine do
         end
 
         it 'raises error' do
-          expect{ subject }.to raise_error(StateMachine::Parser::InvalidStateInTransition)
+          expect { subject }.to raise_error(StateMachine::Parser::InvalidStateInTransition)
         end
       end
 
@@ -100,7 +102,7 @@ RSpec.describe StateMachine do
         end
 
         it 'raises error' do
-          expect{ subject }.to raise_error(StateMachine::Parser::InvalidStateInTransition)
+          expect { subject }.to raise_error(StateMachine::Parser::InvalidStateInTransition)
         end
       end
     end

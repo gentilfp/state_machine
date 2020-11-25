@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Transition do
@@ -23,7 +25,7 @@ RSpec.describe Transition do
     end
 
     context 'when guard is a Proc' do
-      let(:guard_clause) { -> { 1 == 1 } }
+      let(:guard_clause) { -> { 1 != 2 } }
 
       it 'calls sender method' do
         expect(subject.valid_guard?).to be_truthy

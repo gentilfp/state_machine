@@ -1,0 +1,31 @@
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: enable
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/LineLength:
+  Max: 120
+  IgnoredPatterns: ['(\A|\s)#']
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/ModuleLength:
+  Exclude:
+    - '**/*_spec.rb'
+
+Metrics/BlockLength:
+  Exclude:
+    - '**/*_spec.rb'
+
+Naming/MethodParameterName:
+  Enabled: false
+
+Naming/VariableName:
+  Enabled: false
+
+Lint/ConstantDefinitionInBlock:
+  Exclude:
+    - '**/*_spec.rb'

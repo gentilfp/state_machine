@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe StateMachine::Parser do
@@ -16,7 +18,7 @@ RSpec.describe StateMachine::Parser do
 
     it 'reads state config' do
       expect(initial_state).to eq :pending
-      expect(states).to eq [:pending, :done]
+      expect(states).to eq %i[pending done]
     end
   end
 

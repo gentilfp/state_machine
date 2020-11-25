@@ -1,7 +1,9 @@
-require "state_machine/version"
-require "state_machine/transition"
-require "state_machine/callback"
-require "state_machine/parser"
+# frozen_string_literal: true
+
+require 'state_machine/version'
+require 'state_machine/transition'
+require 'state_machine/callback'
+require 'state_machine/parser'
 
 module StateMachine
   class InvalidTransition < StandardError; end
@@ -12,7 +14,7 @@ module StateMachine
   end
 
   def initialize(initial_state = nil)
-    set_initial_state(initial_state)
+    initial_state(initial_state)
     define_methods
   end
 
@@ -20,12 +22,11 @@ module StateMachine
     raise InvalidTransition if events[event][current_state].nil?
     raise TransitionGuardClauseViolated unless transition.valid_guard?(self)
 
-    callbacks[:leave_state][@current_state]&.call
-    callbacks[:transition][event]&.call
+    run_before_callbacks(event)
 
     @current_state = transition.to
 
-    callbacks[:enter_state][@current_state]&.call
+    run_after_callbacks
   end
 
   def can_transit?(event, transition)
@@ -37,7 +38,7 @@ module StateMachine
   end
 
   def states
-    @states ||= events.keys.flat_map{|event| events[event].keys}.uniq
+    @states ||= events.keys.flat_map { |event| events[event].keys }.uniq
   end
 
   def events
@@ -50,12 +51,21 @@ module StateMachine
 
   private
 
+  def run_before_callbacks(event)
+    callbacks[:leave_state][@current_state]&.call
+    callbacks[:transition][event]&.call
+  end
+
+  def run_after_callbacks
+    callbacks[:enter_state][@current_state]&.call
+  end
+
   def define_methods
     define_state_methods
     define_event_methods
   end
 
-  def set_initial_state(initial_state)
+  def initial_state(initial_state)
     @initial_state ||= initial_state || self.class.instance_variable_get(:@initial_state)
   end
 
@@ -69,7 +79,7 @@ module StateMachine
 
   def define_event_methods
     events.each do |event, transitions|
-      transitions.keys.each do |from|
+      transitions.each_key do |from|
         define_singleton_method("#{event}!") do
           transit(event, transitions[from])
         end

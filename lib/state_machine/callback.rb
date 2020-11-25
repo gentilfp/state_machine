@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Callback
   attr_reader :code_block
 
