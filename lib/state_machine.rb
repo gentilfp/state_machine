@@ -31,11 +31,8 @@ module StateMachine
   end
 
   def transit(event, transition)
-    current_transition = @events[event][current_state]
-    raise 'invalid transition' if current_transition.nil?
-
-    guard_clause = transition.guard.call
-    raise 'transition guard clause violated' unless guard_clause
+    raise 'invalid transition' if @events[event][current_state].nil?
+    raise 'transition guard clause violated' unless transition.valid_guard?(self)
 
     @current_state = transition.to
   end

@@ -17,7 +17,11 @@ RSpec.describe StateMachine do
     end
 
     event :hold do
-      transitions from: [:walking, :running], to: :standing
+      transitions from: [:walking, :running], to: :standing, when: :method_guard
+    end
+
+    def method_guard
+      true
     end
   end
 
@@ -76,6 +80,12 @@ RSpec.describe StateMachine do
     it 'transits from one state to another' do
       subject.walk!
       expect(subject.current_state).to eq :walking
+    end
+
+    it 'transits when guard clause is a method that returns true' do
+      subject.walk!
+      subject.hold!
+      expect(subject.current_state).to eq :standing
     end
 
     it 'raises error when transition is invalid' do
