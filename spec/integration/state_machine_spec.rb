@@ -62,6 +62,36 @@ RSpec.describe StateMachine do
         expect{ subject }.to raise_error('OnlyOneInitialStateAllowed')
       end
     end
+
+    context 'with an invalid state in transitions' do
+      context 'when "from" state is invalid' do
+        subject do
+          class StateMachineTestClass
+            event :stop do
+              transitions from: :foo, to: :standing
+            end
+          end
+        end
+
+        it 'raises error' do
+          expect{ subject }.to raise_error('InvalidStateInTransition')
+        end
+      end
+
+      context 'when "to" state is invalid' do
+        subject do
+          class StateMachineTestClass
+            event :stop do
+              transitions from: :walking, to: :bar
+            end
+          end
+        end
+
+        it 'raises error' do
+          expect{ subject }.to raise_error('InvalidStateInTransition')
+        end
+      end
+    end
   end
 
   context 'register events and transitions' do

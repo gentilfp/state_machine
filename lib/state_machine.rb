@@ -65,6 +65,9 @@ module StateMachine
         @initial_state = name
       end
 
+      @states ||= []
+      @states << name
+
       define_method("#{name}?") do
         current_state == name
       end
@@ -80,6 +83,12 @@ module StateMachine
     def transitions(*args)
       options = args[0]
       from, to, guard = options[:from], options[:to], options[:when]
+
+      event_states = [from, to].flatten
+      states_intersection = (@states & event_states)
+      unless  event_states.all? {|state| states_intersection.include?(state)}
+        raise 'InvalidStateInTransition'
+      end
 
       @events ||= {}
       @events[@current_event] ||= {}
