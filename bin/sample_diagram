@@ -41,4 +41,9 @@ obj.events.each_value do |events|
   end
 end
 
+begin
+  Dir.mkdir 'tmp'
+rescue StandardError
+  nil
+end
 g.output(png: "tmp/#{Time.now.to_i}_sample_diagram.png")
