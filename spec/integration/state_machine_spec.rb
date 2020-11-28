@@ -118,7 +118,7 @@ RSpec.describe StateMachine do
       end
 
       it 'raises error' do
-        expect{ subject }.to raise_error(StateMachine::NoInitialStateFound)
+        expect { subject }.to raise_error(StateMachine::NoInitialStateFound)
       end
     end
   end

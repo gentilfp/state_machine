@@ -7,6 +7,8 @@ require 'state_machine/parser'
 require 'state_machine/state_machine'
 require 'state_machine/machine'
 require 'state_machine/validators/base'
+require 'state_machine/validators/invalid_transition'
+require 'state_machine/validators/transition_guard_clause_violated'
 
 module StateMachine
   class InvalidTransition < StandardError; end

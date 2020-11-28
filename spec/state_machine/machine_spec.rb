@@ -4,7 +4,7 @@ RSpec.describe StateMachine::Machine do
   context 'attributes' do
     subject { described_class.new(args) }
     let(:args) { { events: events, callbacks: callbacks, initial_state: initial_state } }
-    let(:states) { [:pending, :stopped] }
+    let(:states) { %i[pending stopped] }
     let(:events) do
       {
         run: { pending: double(:transition) },

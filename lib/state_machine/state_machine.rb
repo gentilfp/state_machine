@@ -1,5 +1,4 @@
 module StateMachine
-
   attr_reader :state_machine
 
   def self.included(base)
@@ -12,9 +11,7 @@ module StateMachine
   end
 
   def transit(event, transition)
-    raise InvalidTransition if @state_machine.events[event][@state_machine.current_state].nil?
-    raise TransitionGuardClauseViolated unless transition.valid_guard?(self)
-
+    validate_transition(event, transition)
     run_before_callbacks(event)
 
     @state_machine.transit(transition.to)
@@ -27,6 +24,15 @@ module StateMachine
   end
 
   private
+
+  def validate_transition(event, transition)
+    [Validators::InvalidTransition,
+     Validators::TransitionGuardClauseViolated].each do |validator_klass|
+      validator = validator_klass.new(@state_machine, event: event, transition: transition, obj: self)
+
+      validator.fail! unless validator.valid?
+    end
+  end
 
   def run_before_callbacks(event)
     @state_machine.callbacks[:leave_state][@state_machine.current_state]&.call
