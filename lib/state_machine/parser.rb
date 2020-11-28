@@ -33,7 +33,7 @@ module StateMachine
       raise InvalidStateInTransition unless validate_states_in_transation(from, to)
 
       [from].flatten.each do |from_state|
-        events[@current_event][from_state] = Transition.new(from_state, to, guard)
+        events[@current_event][from_state] = Transition.new(from: from_state, to: to, guard: guard)
       end
 
       self
@@ -78,7 +78,7 @@ module StateMachine
     end
 
     def callbacks
-      @callbacks || initialize_callbacks
+      @callbacks ||= initialize_callbacks
     end
 
     def events
