@@ -6,75 +6,50 @@ module StateMachine
   end
 
   def initialize(initial_state = nil)
-    initialize_machine(initial_state)
-    define_methods
+    @state_machine = Machine.new(
+      states: self.class.instance_variable_get(:@states),
+      events: self.class.instance_variable_get(:@events),
+      callbacks: self.class.instance_variable_get(:@callbacks),
+      initial_state: initial_state || self.class.instance_variable_get(:@initial_state)
+    )
+
+    MethodDefiner.new(@state_machine, self.class).define_methods
   end
 
   def transit(event, transition)
     validate_transition(event, transition)
     run_before_callbacks(event)
 
-    @state_machine.transit(transition.to)
+    state_machine.transit(transition.to)
 
     run_after_callbacks
   end
 
   def can_transit?(event, transition)
-    !@state_machine.events[event][@state_machine.current_state].nil? && transition.valid_guard?(self)
+    validators(event, transition).each { |validator| return false unless validator.valid? }
+
+    true
   end
 
   private
 
   def validate_transition(event, transition)
-    [Validators::InvalidTransition,
-     Validators::TransitionGuardClauseViolated].each do |validator_klass|
-      validator = validator_klass.new(@state_machine, event: event, transition: transition, obj: self)
+    validators(event, transition).each { |validator| validator.fail! unless validator.valid? }
+  end
 
-      validator.fail! unless validator.valid?
+  def validators(event, transition)
+    [Validators::InvalidTransition,
+     Validators::TransitionGuardClauseViolated].flat_map do |validator_klass|
+      validator_klass.new(@state_machine, event: event, transition: transition, obj: self)
     end
   end
 
   def run_before_callbacks(event)
-    @state_machine.callbacks[:leave_state][@state_machine.current_state]&.call
-    @state_machine.callbacks[:transition][event]&.call
+    state_machine.callbacks[:leave_state][@state_machine.current_state]&.call
+    state_machine.callbacks[:transition][event]&.call
   end
 
   def run_after_callbacks
-    @state_machine.callbacks[:enter_state][@state_machine.current_state]&.call
-  end
-
-  def initialize_machine(initial_state)
-    @state_machine = Machine.new(
-      events: self.class.instance_variable_get(:@events),
-      callbacks: self.class.instance_variable_get(:@callbacks),
-      initial_state: initial_state || self.class.instance_variable_get(:@initial_state)
-    )
-  end
-
-  def define_methods
-    define_state_methods
-    define_event_methods
-  end
-
-  def define_state_methods
-    @state_machine.states.each do |state|
-      define_singleton_method("#{state}?") do
-        @state_machine.current_state == state
-      end
-    end
-  end
-
-  def define_event_methods
-    @state_machine.events.each do |event, transitions|
-      transitions.each_key do |from|
-        define_singleton_method("#{event}!") do
-          transit(event, transitions[from])
-        end
-
-        define_singleton_method("can_#{event}?") do
-          can_transit?(event, transitions[from])
-        end
-      end
-    end
+    state_machine.callbacks[:enter_state][@state_machine.current_state]&.call
   end
 end
