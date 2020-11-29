@@ -106,6 +106,21 @@ RSpec.describe StateMachine do
         end
       end
     end
+
+    context 'when no initial state is found' do
+      subject do
+        class MachineWithoutInitialState
+          include StateMachine
+
+          state :foo
+          state :bar
+        end.new
+      end
+
+      it 'raises error' do
+        expect { subject }.to raise_error(StateMachine::NoInitialStateFound)
+      end
+    end
   end
 
   context 'registering events and transitions' do
@@ -113,19 +128,19 @@ RSpec.describe StateMachine do
 
     context 'registering events and state transitions' do
       it 'registers hash with events' do
-        expect(subject.events).to include(:walk, :run, :hold)
+        expect(subject.state_machine.events).to include(:walk, :run, :hold)
       end
 
       it 'registers events with transions' do
-        expect(subject.events[:walk]).to include :standing
-        expect(subject.events[:run]).to include :standing
-        expect(subject.events[:run]).to include :walking
-        expect(subject.events[:hold]).to include :walking
-        expect(subject.events[:hold]).to include :running
+        expect(subject.state_machine.events[:walk]).to include :standing
+        expect(subject.state_machine.events[:run]).to include :standing
+        expect(subject.state_machine.events[:run]).to include :walking
+        expect(subject.state_machine.events[:hold]).to include :walking
+        expect(subject.state_machine.events[:hold]).to include :running
       end
 
       it 'registers guard clause' do
-        expect(subject.events[:walk][:standing].guard).to be_a Proc
+        expect(subject.state_machine.events[:walk][:standing].guard).to be_a Proc
       end
     end
   end
@@ -135,13 +150,13 @@ RSpec.describe StateMachine do
 
     it 'transits from one state to another' do
       subject.walk!
-      expect(subject.current_state).to eq :walking
+      expect(subject.state_machine.current_state).to eq :walking
     end
 
     it 'transits when guard clause is a method that returns true' do
       subject.walk!
       subject.hold!
-      expect(subject.current_state).to eq :standing
+      expect(subject.state_machine.current_state).to eq :standing
     end
 
     it 'raises error when transition is invalid' do
@@ -169,15 +184,15 @@ RSpec.describe StateMachine do
     subject { StateMachineTestClass.new }
 
     context 'when entering a state' do
-      it { expect(subject.callbacks[:enter_state][:walking]).to be_a Callback }
+      it { expect(subject.state_machine.callbacks[:enter_state][:walking]).to be_a Callback }
     end
 
     context 'when leaving a state' do
-      it { expect(subject.callbacks[:leave_state][:running]).to be_a Callback }
+      it { expect(subject.state_machine.callbacks[:leave_state][:running]).to be_a Callback }
     end
 
     context 'when running a transition' do
-      it { expect(subject.callbacks[:transition][:hold]).to be_a Callback }
+      it { expect(subject.state_machine.callbacks[:transition][:hold]).to be_a Callback }
     end
   end
 

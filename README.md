@@ -67,6 +67,19 @@ $ ./state_machine diagram
 ```
 The state machine definition can be found at `./bin/sample_diagram` and the image file at `./tmp/TIMESTAMP_sample_diagram.png`
 
+You can also require this class in your application and generate a diagram for your own class.
+
+```
+require 'diagram/generator'
+
+instance = YourClass.new
+
+diagram = Diagram::Generator.new(instance, output_path)
+diagram.call
+```
+
+This will generate a png file with your state machine and events and save it in `output_path`.
+
 ## Usage
 Make sure to include `StateMachine` in your class.
 Here is an example
@@ -103,12 +116,12 @@ end
 ```
 
 ## Design
-There are basically two modules responsible for implementing the state machine.
-* Parser module is responsible for implementing the methods :state, :event, :transition and the callbacks. It parses data and registers them basically in hashes that can be accessed directly when changing state machine states;
+There are basically two modules and a few classes responsible for implementing the state machine.
+* `Parser` module is responsible for implementing the methods :state, :event, :transition and the callbacks. It parses data and registers them basically in hashes that can be accessed directly when changing state machine states;
   * it raises `OnlyOneInitialStateAllowed` if initial state is defined more than once;
     * initial state can be configured in the state machine or when initializing the class, the precedence is the latest;
   * it raises `InvalidStateInTransition` if a particular transition is defined to use a state that has not been defined before;
-* StateMachine module is responsible for gathering the data parsed from Parser and defining methods that can be used in your own class, such as:
+* `StateMachine` is responsible for gathering the data parsed from Parser and defining methods that can be used in your own class, such as:
   * can_TRANSITION? - if transition can be made regarding if it exists or the guard clause returns true;
   * STATE? - if the machine is in this state, returns true or false;
   * EVENT! - makes the transition from current_state to the transition definition state, it will raise `InvalidTransition` if transition is not defined or `TransitionGuardClauseViolated` if guard clause fails.
@@ -118,8 +131,7 @@ There are basically two modules responsible for implementing the state machine.
     * run transition callback
     * change current state to the destination state
     * run enter state callback for the destination on
-
-I've dedicated only a couple of days to this project so it has a lot to improve.
+* `Validators` run validations such as: invalid transition or when a guard clause returns false;
 
 ### Implementation
 The first thing that was thought and designed was the data structure for the state machine, it basically uses two hashes, one for the events and the other for the callbacks.
@@ -193,8 +205,6 @@ The callbacks Hash
 
 ## Where to improve?
 There are a few of things that can be refactored and extracted:
-* move transition validation to a validator service or anything like so it would remove the duplicated method call in transit and can_transit? `(state_machine:22)`
-* remove the dependencies that Transaction class has to the object when running a method guard clause `(state_machine:33)`
-* refactor callbacks so you have an object that can be called instead of running directly the lambda `(state_machine:54)`
-* extract callbacks and transition from the statemachine main module so they can be treated separately
-* more unit tests, I've decided to cover the majority of cases using the integration tests
+* remove coupling between `event` and `transitions`, specially where they are arguments in `StateMachine` module.
+* refactor callbacks so you have an object that can be called instead of running directly the lambda
+* remove the dependencies that `Transaction` class has to the object when running a method guard clause
